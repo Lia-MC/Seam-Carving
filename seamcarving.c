@@ -45,9 +45,31 @@ void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
 }
 
 void dynamic_seam(struct rgb_img *grad, double **best_arr) {
-    for (int i = 0; i < grad->width; i++) {
-        for (int j = 0; j < grad->height; j++) {
-            *best_arr = calc_energy(im, &grad) + min()
+    uint8_t left;
+    uint8_t optimal;
+
+    // allocate memory for best_arr (enough for a lot of pixels so that i dont have to realloc)
+    // or check realloc when storing the value in best arr each time works too and is probably better
+
+    for (int y = 0; y < grad->height; y++) {
+        for (int x = 0; x < grad->width; x++) {
+            if (y == 0) {
+                // just store the current value, dont do any left or right checking
+                optimal = calc_energy(im, &grad); // or should i do like grad[y][x] or grad->raster or smth
+            }
+            else if (x == 0) {
+                // no left, just right and center
+                optimal = calc_energy(im, &grad) + min();
+            }
+            else if (x == grad->height - 1) {
+                // no right, just left and center
+                optimal = calc_energy(im, &grad) + min();
+            }
+            
+            
+
+            (*best_arr)[x*(grad->width)+y] = optimal;
+
         }
     }
     // allocates and computes the dynamic array *best_arr.
@@ -70,7 +92,7 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
        5. keep note of the path - how? or not... might not be needed
        6. for each path, compare it with the prexisting energy value and compare, and if
        it's lower, then make the new energy as the minimum. note: initialize it to infinity pls
-       
+       7. store the minimum value in the best_array, right after the last element
      */
 
 
