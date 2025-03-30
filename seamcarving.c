@@ -46,18 +46,3 @@ void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
     }
 }
 
-// int main() {
-//     struct rgb_img *im;
-
-//     read_in_img(&im, "3x4.png");
-    
-//     struct rgb_img *grad;
-
-//     create_img(&grad, im->height, im->width);
-  
-//     calc_energy(im,  &grad);
-  
-//     print_grad(grad);
-
-//     return 0;
-// }
