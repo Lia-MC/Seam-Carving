@@ -4,47 +4,40 @@
 
 void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
 
-    int rx1;
-    int gx1;
-    int bx1;
-    int ry1;
-    int gy1;
-    int by1;
+    int rx;
+    int gx;
+    int bx;
+    int ry;
+    int gy;
+    int by;
 
-    int rx2;
-    int gx2;
-    int bx2;
-    int ry2;
-    int gy2;
-    int by2;
-
-    int xvals = im->width - 1; // make this 1 less than the i-th
-    int yvals = im->height - 1; // make this 1 less than the i-th
+    int xvals = im->width; // handled wrapping in for loop
+    int yvals = im->height; // handled wrapping in for loop
     int xgrad = 0;
     int ygrad = 0;
 
     double energy = 0;
     uint8_t dualgradientenergy;
 
-    for (int i = 1; i < xvals; i++) { // start at 1 and ends before last pixel so that we dont do edges
-        for (int j = 1; j < yvals; j++) {
+    create_img(grad, im->height, im->width);
 
-            ry1, rx1 = get_pixel(im, j+1, i, 0) - get_pixel(im, j-1, i, 0); 
-            gy1, gx1 = get_pixel(im, j+1, i, 0) - get_pixel(im, j-1, i, 1);
-            gy1, bx1 = get_pixel(im, j+1, i, 0) - get_pixel(im, j-1, i, 2);
+    for (int i = 0; i < xvals; i++) { // start at 1 and ends before last pixel so that we dont do edges
+        for (int j = 0; j < yvals; j++) {
 
-            ry2, rx2 = get_pixel(im, j, i+1, 0) - get_pixel(im, j, i-1, 0); 
-            gy2, gx2 = get_pixel(im, j, i+1, 0) - get_pixel(im, j, i-1, 1);
-            gy2, bx2 = get_pixel(im, j, i+1, 0) - get_pixel(im, j, i-1, 2);
+            ry = get_pixel(im, (j + 1) % im->height, i, 0) - get_pixel(im, (j - 1 + im->height) % im->height, i, 0); 
+            gy = get_pixel(im, (j + 1) % im->height, i, 1) - get_pixel(im, (j - 1 + im->height) % im->height, i, 1); 
+            by = get_pixel(im, (j + 1) % im->height, i, 2) - get_pixel(im, (j - 1 + im->height) % im->height, i, 2); 
 
-            xgrad = ((ry1) * (ry1), (rx1) * (rx1)) + ((gy1) * (gy1), (gx1) * (gx1)) + ((by1) * (by1), (bx1) * (bx1));
-            ygrad = ((ry2) * (ry2), (rx2) * (rx2)) + ((gy2) * (gy2), (gx2) * (gx2)) + ((by2) * (by2), (bx2) * (bx2));
+            rx = get_pixel(im, j, (i + 1) % im->width, 0) - get_pixel(im, j, (i - 1 + im->width) % im->width, 0); 
+            gx = get_pixel(im, j, (i + 1) % im->width, 1) - get_pixel(im, j, (i - 1 + im->width) % im->width, 1);
+            bx = get_pixel(im, j, (i + 1) % im->width, 2) - get_pixel(im, j, (i - 1 + im->width) % im->width, 2);
 
-            energy = sqrt(xgrad * xgrad + ygrad * ygrad);
+            xgrad = (rx * rx) + (gx * gx) + (bx * bx);
+            ygrad = (ry * ry) + (gy * gy) + (by * by);
 
-            energy *= 0.1;
+            energy = sqrt(xgrad + ygrad);
 
-            dualgradientenergy = (uint8_t) energy;
+            dualgradientenergy = (uint8_t) (energy / 10);
 
             // For each pixel, set the r, g, and b channels to the same value 
             // (the energy divided by 10 and cast to uint8_t).
@@ -52,3 +45,19 @@ void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
         }
     }
 }
+
+// int main() {
+//     struct rgb_img *im;
+
+//     read_in_img(&im, "3x4.png");
+    
+//     struct rgb_img *grad;
+
+//     create_img(&grad, im->height, im->width);
+  
+//     calc_energy(im,  &grad);
+  
+//     print_grad(grad);
+
+//     return 0;
+// }
