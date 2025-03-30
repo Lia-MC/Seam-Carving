@@ -39,10 +39,12 @@ void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
 
             dualgradientenergy = (uint8_t) (energy / 10);
 
-            // For each pixel, set the r, g, and b channels to the same value 
-            // (the energy divided by 10 and cast to uint8_t).
             set_pixel(*grad, j, i, dualgradientenergy, dualgradientenergy, dualgradientenergy);
         }
     }
 }
 
+void dynamic_seam(struct rgb_img *grad, double **best_arr) {
+    // allocates and computes the dynamic array *best_arr.
+    // (*best_arr)[i*width+j] contains the minimum cost of a seam from the top of grad to the point (i,j)
+}
