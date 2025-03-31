@@ -51,7 +51,7 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
     // allocate memory for best_arr (enough for a lot of pixels so that i dont have to realloc)
     // or check realloc when storing the value in best arr each time works too and is probably better
 
-    best_arr = () malloc( * sizeof());
+    best_arr = (uint8_t) malloc(507 * 285 * sizeof(uint8_t)); // 507 x 285 is dimension of the ocean image
 
     for (int y = 0; y < grad->height; y++) {
         for (int x = 0; x < grad->width; x++) {
@@ -61,15 +61,23 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
             }
             else if (x == 0) {
                 // no left, just right and center
-                optimal = calc_energy(im, &grad) + min();
+                optimal = calc_energy(im, &grad) + min(grad[y-1][x], grad[y-1][x+1]);
             }
             else if (x == grad->height - 1) {
                 // no right, just left and center
-                optimal = calc_energy(im, &grad) + min();
+                optimal = calc_energy(im, &grad) + min(grad[y-1][x-1], grad[y-1][x]);
+            } else {
+                optimal = calc_energy(im, &grad) + min(grad[y-1][x-1], grad[y-1][x], grad[y-1][x+1]);
+            }
+
+            // advance in bestarr until theres an open spot
+            int count = 0;
+            while (*best_arr[count] != NULL) {
+                count++;
             }
             
             
-            if () { // check if theres enough space
+            if (*best_arr[count]) { // check if theres enough space
                 (*best_arr)[x*(grad->width)+y] = optimal;
             } else {
                 // realloc
