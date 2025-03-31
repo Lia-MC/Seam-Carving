@@ -51,6 +51,8 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
     // allocate memory for best_arr (enough for a lot of pixels so that i dont have to realloc)
     // or check realloc when storing the value in best arr each time works too and is probably better
 
+    best_arr = () malloc( * sizeof());
+
     for (int y = 0; y < grad->height; y++) {
         for (int x = 0; x < grad->width; x++) {
             if (y == 0) {
@@ -67,9 +69,12 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
             }
             
             
-
-            (*best_arr)[x*(grad->width)+y] = optimal;
-
+            if () { // check if theres enough space
+                (*best_arr)[x*(grad->width)+y] = optimal;
+            } else {
+                // realloc
+                (*best_arr)[x*(grad->width)+y] = optimal;
+            }
         }
     }
     // allocates and computes the dynamic array *best_arr.
