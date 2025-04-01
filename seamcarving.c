@@ -45,44 +45,34 @@ void calc_energy(struct rgb_img *im, struct rgb_img **grad) {
 }
 
 void dynamic_seam(struct rgb_img *grad, double **best_arr) {
-    uint8_t left;
     uint8_t optimal;
 
     // allocate memory for best_arr (enough for a lot of pixels so that i dont have to realloc)
     // or check realloc when storing the value in best arr each time works too and is probably better
 
-    best_arr = (uint8_t) malloc(507 * 285 * sizeof(uint8_t)); // 507 x 285 is dimension of the ocean image
+    *best_arr = (double *) malloc(grad->height * grad->width * sizeof(double)); 
 
     for (int y = 0; y < grad->height; y++) {
         for (int x = 0; x < grad->width; x++) {
             if (y == 0) {
                 // just store the current value, dont do any left or right checking
-                optimal = calc_energy(im, &grad); // or should i do like grad[y][x] or grad->raster or smth
+                // energy is alr stored in grad so we can just get the pixel instead of recalculating the gradient lol
+                optimal = get_pixel(grad, y, x, 0);
             }
+            // note: everything in row above for bestarr is alr calculated by the time we want that info
             else if (x == 0) {
                 // no left, just right and center
-                optimal = calc_energy(im, &grad) + min(grad[y-1][x], grad[y-1][x+1]);
+                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x], (*best_arr)[(y-1) * grad->width + x+1]);
             }
             else if (x == grad->height - 1) {
                 // no right, just left and center
-                optimal = calc_energy(im, &grad) + min(grad[y-1][x-1], grad[y-1][x]);
+                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x-1], (*best_arr)[(y-1) * grad->width + x]);
             } else {
-                optimal = calc_energy(im, &grad) + min(grad[y-1][x-1], grad[y-1][x], grad[y-1][x+1]);
+                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x-1], (*best_arr)[(y-1) * grad->width + x], (*best_arr)[(y-1) * grad->width + x+1]);
             }
 
-            // advance in bestarr until theres an open spot
-            int count = 0;
-            while (*best_arr[count] != NULL) {
-                count++;
-            }
-            
-            
-            if (*best_arr[count]) { // check if theres enough space
-                (*best_arr)[x*(grad->width)+y] = optimal;
-            } else {
-                // realloc
-                (*best_arr)[x*(grad->width)+y] = optimal;
-            }
+            // realloc no longer needed because grad->height and grad->width covers it
+            (*best_arr)[y*(grad->width)+x] = optimal;
         }
     }
     // allocates and computes the dynamic array *best_arr.
