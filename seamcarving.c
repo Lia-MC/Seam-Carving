@@ -125,9 +125,66 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
 }
 
 void recover_path(double *best, int height, int width, int **path) {
-    //
+    // start at top row element 0
+    // for each possibility of the next element (consider edge cases - sides, if it reaches bottom), 
+    // recursively? calculate the minimum path
+
+    // This function allocates a path through the minimum seam as defined by the array best.
+    // For the best array above, the path is [3, 4, 3, 2, 2].
+
+    int min_index = 0;
+
+    *path = malloc(height * sizeof(int));
+
+    for (int x = 1; x < width; x++) {
+        if (best[(height - 1) * width + x] < best[(height - 1) * width + min_index]) {
+            min_index = x;
+        }
+    }
+
+    (*path)[height - 1] = min_index;
+
+    for (int y = height - 2; y >= 0; y--) {
+        int prev_x = (*path)[y + 1];  
+
+        int best_x = prev_x;
+        if (prev_x > 0 && best[y * width + prev_x - 1] < best[y * width + best_x]) {
+            best_x = prev_x - 1;
+        }
+        if (prev_x < width - 1 && best[y * width + prev_x + 1] < best[y * width + best_x]) {
+            best_x = prev_x + 1;
+        }
+
+        (*path)[y] = best_x; 
+    }
 }
 
 void remove_seam(struct rgb_img *src, struct rgb_img **dest, int *path) {
-    //
+    // The function creates the destination image, and writes to it the source image, with the seam removed.
+
+    int foundinrow = 0; // starts false
+
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+
+    create_img(dest, src->height, src->width - 1);
+
+    for (int y = 0; y < src->height; y++) {
+        for (int x = 0; x < src->width; x++) {
+            if (x != path[y]) {
+                r = get_pixel(src, y, x, 0);
+                g = get_pixel(src, y, x, 1);
+                b = get_pixel(src, y, x, 2);
+                set_pixel(*dest, y, x, r, g, b);
+            } else if (x != path[y] && foundinrow == 1) {
+                r = get_pixel(src, y, x, 0);
+                g = get_pixel(src, y, x, 1);
+                b = get_pixel(src, y, x, 2);
+                set_pixel(*dest, y, x - 1, r, g, b);
+            } else if (x == path[y]) {
+                foundinrow = 1;
+            }
+        }
+    }
 }
