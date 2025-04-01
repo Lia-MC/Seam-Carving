@@ -62,13 +62,13 @@ void dynamic_seam(struct rgb_img *grad, double **best_arr) {
             // note: everything in row above for bestarr is alr calculated by the time we want that info
             else if (x == 0) {
                 // no left, just right and center
-                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x], (*best_arr)[(y-1) * grad->width + x+1]);
+                optimal = get_pixel(grad, y, x, 0) + fmin(((*best_arr)[(y-1) * grad->width + x]), ((*best_arr)[(y-1) * grad->width + x+1]));
             }
             else if (x == grad->height - 1) {
                 // no right, just left and center
-                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x-1], (*best_arr)[(y-1) * grad->width + x]);
+                optimal = get_pixel(grad, y, x, 0) + fmin(((*best_arr)[(y-1) * grad->width + x-1]), ((*best_arr)[(y-1) * grad->width + x]));
             } else {
-                optimal = get_pixel(grad, y, x, 0) + fmin((*best_arr)[(y-1) * grad->width + x-1], (*best_arr)[(y-1) * grad->width + x], (*best_arr)[(y-1) * grad->width + x+1]);
+                optimal = get_pixel(grad, y, x, 0) + fmin(((*best_arr)[(y-1) * grad->width + x-1]), fmin(((*best_arr)[(y-1) * grad->width + x]), ((*best_arr)[(y-1) * grad->width + x+1])));
             }
 
             // realloc no longer needed because grad->height and grad->width covers it
@@ -171,20 +171,15 @@ void remove_seam(struct rgb_img *src, struct rgb_img **dest, int *path) {
     create_img(dest, src->height, src->width - 1);
 
     for (int y = 0; y < src->height; y++) {
+        foundinrow = 0;
         for (int x = 0; x < src->width; x++) {
-            if (x != path[y]) {
-                r = get_pixel(src, y, x, 0);
-                g = get_pixel(src, y, x, 1);
-                b = get_pixel(src, y, x, 2);
-                set_pixel(*dest, y, x, r, g, b);
-            } else if (x != path[y] && foundinrow == 1) {
-                r = get_pixel(src, y, x, 0);
-                g = get_pixel(src, y, x, 1);
-                b = get_pixel(src, y, x, 2);
-                set_pixel(*dest, y, x - 1, r, g, b);
-            } else if (x == path[y]) {
-                foundinrow = 1;
+            if (x == path[y]) {
+                foundinrow = 1; // skip this col in the reading for that row
             }
+            r = get_pixel(src, y, x + foundinrow, 0);
+            g = get_pixel(src, y, x + foundinrow, 1);
+            b = get_pixel(src, y, x + foundinrow, 2);
+            set_pixel(*dest, y, x, r, g, b);
         }
     }
 }
